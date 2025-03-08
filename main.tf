@@ -49,6 +49,12 @@ variable "template_fedora" {
   default     = "iso:vm-103-disk-0"
 }
 
+variable "ssh_public_key" {
+  description = "SSH public key to inject into VMs"
+  type        = string
+  sensitive   = true
+}
+
 resource "proxmox_vm_qemu" "kubernetes" {
   name        = "kubernetes"
   target_node = var.node
@@ -63,6 +69,8 @@ resource "proxmox_vm_qemu" "kubernetes" {
     model   = "virtio"
     bridge  = var.network_bridge
   }
+  ssh_forward_ip = "127.0.0.1"
+  sshkeys = var.ssh_public_key
 }
 
 resource "proxmox_vm_qemu" "android" {
@@ -79,6 +87,8 @@ resource "proxmox_vm_qemu" "android" {
     model   = "virtio"
     bridge  = var.network_bridge
   }
+  ssh_forward_ip = "127.0.0.1"
+  sshkeys = var.ssh_public_key
 }
 
 resource "proxmox_vm_qemu" "homeassistant" {
@@ -95,6 +105,8 @@ resource "proxmox_vm_qemu" "homeassistant" {
     model   = "virtio"
     bridge  = var.network_bridge
   }
+  ssh_forward_ip = "127.0.0.1"
+  sshkeys = var.ssh_public_key
 }
 
 resource "proxmox_vm_qemu" "fedora_aurora" {
@@ -111,4 +123,6 @@ resource "proxmox_vm_qemu" "fedora_aurora" {
     model   = "virtio"
     bridge  = var.network_bridge
   }
+  ssh_forward_ip = "127.0.0.1"
+  sshkeys = var.ssh_public_key
 }
