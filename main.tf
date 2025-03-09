@@ -64,7 +64,11 @@ resource "proxmox_vm_qemu" "kubernetes" {
   sockets     = 4
   memory      = 8192
   os_type     = "l26"
-  storage     = var.storage
+  disk {
+    storage = var.storage
+    type    = "scsi0"
+    size    = "50G"
+  }
   network {
     model   = "virtio"
     bridge  = var.network_bridge
@@ -82,7 +86,11 @@ resource "proxmox_vm_qemu" "android" {
   sockets     = 1
   memory      = 8192
   os_type     = "l26"
-  storage     = var.storage
+  disk {
+    storage = var.storage
+    type    = "scsi0"
+    size    = "20G"
+  }
   network {
     model   = "virtio"
     bridge  = var.network_bridge
@@ -100,7 +108,11 @@ resource "proxmox_vm_qemu" "homeassistant" {
   sockets     = 2
   memory      = 8192
   os_type     = "l26"
-  storage     = var.storage
+  disk {
+    storage = var.storage
+    type    = "scsi0"
+    size    = "50G"
+  }
   network {
     model   = "virtio"
     bridge  = var.network_bridge
@@ -118,7 +130,11 @@ resource "proxmox_vm_qemu" "fedora_aurora" {
   sockets     = 2
   memory      = 8192
   os_type     = "l26"
-  storage     = var.storage
+  disk {
+    storage = var.storage
+    type    = "scsi0"
+    size    = "30Gb"
+  }
   network {
     model   = "virtio"
     bridge  = var.network_bridge
