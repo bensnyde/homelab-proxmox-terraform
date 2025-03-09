@@ -10,6 +10,7 @@
         "TFLINT_AWS_RULESET_VERSION": "0.21.1"
       }
     },
+    "postStartCommand": "post-start",
     "settings": {},
     "extensions": ["hashicorp.terraform"],
     "remoteUser": "vscode"
