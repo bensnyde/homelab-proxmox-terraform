@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "telmate/proxmox"
-      version = "~> 2.9"
+      version = "3.0.1-rc6"
     }
   }
 }
@@ -16,7 +16,7 @@ provider "proxmox" {
 
 variable "node" {
   description = "Proxmox node to deploy VMs on"
-  default     = "pve"
+  default     = "proxmox"
 }
 
 variable "storage" {
@@ -29,24 +29,9 @@ variable "network_bridge" {
   default     = "vmbr0"
 }
 
-variable "template_kubernetes" {
-  description = "Template ID for Kubernetes VM"
-  default     = "iso:vm-100-disk-0"
-}
-
-variable "template_android" {
-  description = "Template ID for Android VM"
-  default     = "iso:vm-101-disk-0"
-}
-
-variable "template_homeassistant" {
-  description = "Template ID for Home Assistant VM"
-  default     = "iso:vm-102-disk-0"
-}
-
-variable "template_fedora" {
-  description = "Template ID for Fedora Aurora VM"
-  default     = "iso:vm-103-disk-0"
+variable "template_ubuntu" {
+  description = "Template ID for Ubuntu VM"
+  default     = "UbuntuCloudCT"
 }
 
 variable "ssh_public_key" {
@@ -55,90 +40,57 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
+variable "username" {
+  description = "Local Username"
+  type        = string
+  sensitive   = true
+}
+
+variable "password" {
+  description = "Local Password"
+  type        = string
+  sensitive   = true
+}
+
+variable "searchdomain" {
+  description = "DNS searchdomain"
+  type        = string
+}
+
 resource "proxmox_vm_qemu" "kubernetes" {
-  name        = "kubernetes"
+  name = "kubernetes"
+  count = 1 
   target_node = var.node
-  clone       = var.template_kubernetes
-  clone_wait  = 10
-  cores       = 4
-  sockets     = 4
-  memory      = 8192
-  os_type     = "l26"
+  clone = var.template_ubuntu
+  full_clone  = true
+  agent = 0
+  os_type = "ubuntu"
+  cores = 4
+  sockets = 4
+  memory = 8192
+  scsihw = "virtio-scsi-pci"
+  onboot = true
+  automatic_reboot = true
+  
   disk {
-    storage = var.storage
-    type    = "scsi0"
-    size    = "50G"
+    slot      = "scsi0"
+    type      = "disk"
+    storage   = var.storage
+    size      = 32
+  }
+  disk {
+    slot      = "scsi1"
+    type      = "cloudinit"
+    storage   = var.storage
   }
   network {
-    model   = "virtio"
-    bridge  = var.network_bridge
+    id    = 0
+    model = "virtio"
+    bridge = var.network_bridge
   }
-  ssh_forward_ip = "127.0.0.1"
-  sshkeys = var.ssh_public_key
-}
-
-resource "proxmox_vm_qemu" "android" {
-  name        = "android"
-  target_node = var.node
-  clone       = var.template_android
-  clone_wait  = 10
-  cores       = 4
-  sockets     = 1
-  memory      = 8192
-  os_type     = "l26"
-  disk {
-    storage = var.storage
-    type    = "scsi0"
-    size    = "20G"
-  }
-  network {
-    model   = "virtio"
-    bridge  = var.network_bridge
-  }
-  ssh_forward_ip = "127.0.0.1"
-  sshkeys = var.ssh_public_key
-}
-
-resource "proxmox_vm_qemu" "homeassistant" {
-  name        = "homeassistant"
-  target_node = var.node
-  clone       = var.template_homeassistant
-  clone_wait  = 10
-  cores       = 2
-  sockets     = 2
-  memory      = 8192
-  os_type     = "l26"
-  disk {
-    storage = var.storage
-    type    = "scsi0"
-    size    = "50G"
-  }
-  network {
-    model   = "virtio"
-    bridge  = var.network_bridge
-  }
-  ssh_forward_ip = "127.0.0.1"
-  sshkeys = var.ssh_public_key
-}
-
-resource "proxmox_vm_qemu" "fedora_aurora" {
-  name        = "fedora-aurora"
-  target_node = var.node
-  clone       = var.template_fedora
-  clone_wait  = 10
-  cores       = 4
-  sockets     = 2
-  memory      = 8192
-  os_type     = "l26"
-  disk {
-    storage = var.storage
-    type    = "scsi0"
-    size    = "30Gb"
-  }
-  network {
-    model   = "virtio"
-    bridge  = var.network_bridge
-  }
-  ssh_forward_ip = "127.0.0.1"
+  ipconfig0 = "ip=dhcp"
+  searchdomain = var.searchdomain
+  ciuser = var.username
+  cipassword = var.password
   sshkeys = var.ssh_public_key
 }
