@@ -2,16 +2,27 @@ terraform {
   required_providers {
     proxmox = {
       source  = "telmate/proxmox"
-      version = ">= 3.0"
+      version = "3.0.1-rc6"
     }
   }
 }
 
-provider "proxmox" {
-  pm_api_url      = "https://<proxmox_host>:8006/api2/json"
-  pm_api_token_id = "<api_token_id>"
-  pm_api_token_secret = "<api_token_secret>"
-  pm_tls_insecure = true
+variable "pm_api_token_id" {
+  description = "Proxmox API Token ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "pm_api_token_secret" {
+  description = "Proxmox API Token Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "pm_api_url" {
+  description = "Proxmox API URL"
+  type        = string
+  sensitive   = true
 }
 
 variable "node" {
@@ -29,9 +40,19 @@ variable "network_bridge" {
   default     = "vmbr0"
 }
 
+variable "network_model" {
+  description = "Network model to use for VMs"
+  default     = "virtio"
+}
+
+variable "scsihw" {
+  description = "SCSI HW to use for VMs"
+  default     = "virtio-scsi-pci"
+}
+
 variable "template_ubuntu" {
   description = "Template ID for Ubuntu VM"
-  default     = "ubuntu-cloud-ct"
+  default     = "UbuntuCloudCT"
 }
 
 variable "ssh_public_key" {
@@ -41,13 +62,13 @@ variable "ssh_public_key" {
 }
 
 variable "username" {
-  description = "Local Username"
+  description = "Local VM guest Username"
   type        = string
   sensitive   = true
 }
 
 variable "password" {
-  description = "Local Password"
+  description = "Local VM guest Password"
   type        = string
   sensitive   = true
 }
@@ -55,6 +76,13 @@ variable "password" {
 variable "searchdomain" {
   description = "DNS searchdomain"
   type        = string
+}
+
+provider "proxmox" {
+  pm_api_url      = var.pm_api_url
+  pm_api_token_id = var.pm_api_token_id
+  pm_api_token_secret = var.pm_api_token_secret
+  pm_tls_insecure = true
 }
 
 resource "proxmox_vm_qemu" "kubernetes" {
@@ -68,7 +96,7 @@ resource "proxmox_vm_qemu" "kubernetes" {
   cores = 4
   sockets = 4
   memory = 8192
-  scsihw = "virtio-scsi-pci"
+  scsihw = var.scsihw
   onboot = true
   automatic_reboot = true
   
@@ -85,7 +113,7 @@ resource "proxmox_vm_qemu" "kubernetes" {
   }
   network {
     id    = 0
-    model = "virtio"
+    model = var.network_model
     bridge = var.network_bridge
   }
   ipconfig0 = "ip=dhcp"
