@@ -115,6 +115,7 @@ resource "proxmox_vm_qemu" "kubernetes" {
     id    = 0
     model = var.network_model
     bridge = var.network_bridge
+    firewall = true
   }
   ipconfig0 = "ip=dhcp"
   searchdomain = var.searchdomain
