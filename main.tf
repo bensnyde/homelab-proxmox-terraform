@@ -31,7 +31,7 @@ variable "network_bridge" {
 
 variable "template_ubuntu" {
   description = "Template ID for Ubuntu VM"
-  default     = "UbuntuCloudCT"
+  default     = "ubuntu-cloud-ct"
 }
 
 variable "ssh_public_key" {
