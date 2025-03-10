@@ -50,9 +50,14 @@ variable "scsihw" {
   default     = "virtio-scsi-pci"
 }
 
-variable "template_ubuntu" {
-  description = "Template ID for Ubuntu VM"
-  default     = "UbuntuCloudCT"
+variable "template_name" {
+  description = "Template ID for VM"
+  default     = "ubuntu-cloud-ct"
+}
+
+variable "template_os_type" {
+  description = "Template OS Type for VM"
+  default     = "ubuntu"
 }
 
 variable "ssh_public_key" {
@@ -89,10 +94,10 @@ resource "proxmox_vm_qemu" "kubernetes" {
   name = "kubernetes"
   count = 1 
   target_node = var.node
-  clone = var.template_ubuntu
+  clone = var.template_name
   full_clone  = true
   agent = 0
-  os_type = "ubuntu"
+  os_type = var.template_os_type
   cores = 4
   sockets = 4
   memory = 8192
