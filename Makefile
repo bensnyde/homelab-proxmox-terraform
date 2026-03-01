@@ -58,28 +58,28 @@ help:
 
 bootstrap:
 	@echo 'Initializing Backend: $(BACKEND_TYPE)'
-	chmod +x update_env_latest_image_urls.sh
-	./update_env_latest_image_urls.sh
-	mkdir -p vms/haos vms/adguard vms/portainer
-	source .env && tofu init $(BACKEND_FLAGS) -reconfigure
-	source .env && tofu apply -target=local_file.sops_config \
+	chmod +x scripts/update_env_latest_img_urls.sh
+	./scripts/update_env_latest_img_urls.sh
+	mkdir -p terraform/vms/haos terraform/vms/adguard terraform/vms/portainer
+	source .env && tofu -chdir=terraform init $(BACKEND_FLAGS) -reconfigure
+	source .env && tofu -chdir=terraform apply -target=local_file.sops_config \
 		-target=local_file.flake_nix \
 		-target=local_file.nix_vars \
 		-target=local_file.ha_config_yaml \
 		-auto-approve
 
 refresh:
-	source .env && tofu refresh
+	source .env && tofu -chdir=terraform refresh
 
 status: refresh
 	@echo 'Backend: $(BACKEND_TYPE)'
-	source .env && tofu state list
+	source .env && tofu -chdir=terraform state list
 
 plan:
-	source .env && tofu plan
+	source .env && tofu -chdir=terraform plan
 
 apply:
-	source .env && tofu apply -auto-approve
+	source .env && tofu -chdir=terraform apply -auto-approve
 
 encrypt:
 	sops --encrypt --in-place secrets.yaml
