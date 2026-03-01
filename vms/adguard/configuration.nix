@@ -12,7 +12,7 @@ in {
   time.timeZone = vars.timeZone;
 
   sops.defaultSopsFile = ../../secrets.yaml;
-  sops.age.sshKeyPaths = [ vars.sopsSshKeyPath ]; 
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ]; 
   
   sops.secrets.adguard_hash = { owner = "adguardhome"; };
   sops.secrets.os_password_hash = { neededForUsers = true; };
