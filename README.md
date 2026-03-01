@@ -56,8 +56,11 @@ This project is optimized for **VS Code Dev Containers**.
 
 ---
 
-## 🛠️ Manual Prerequisites
-* **OpenTofu**, **Nix**, and **SOPS** installed locally.
+## 🛠️ Manual Prerequisites (If NOT using Dev Container)
+If you choose to run this directly on your host OS (e.g., Fedora), you must install:
+* **OpenTofu**: To manage Proxmox hardware.
+* **Nix**: Required to build the custom NixOS ISO and deploy configurations via `nixos-anywhere`.
+* **SOPS & Age**: To decrypt your `secrets.yaml`.
 * A populated `.env` file containing your Proxmox credentials and SSH keys.
 
 ---
