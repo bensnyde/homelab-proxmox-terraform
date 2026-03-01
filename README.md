@@ -2,14 +2,11 @@
 
 A fully automated Proxmox homelab featuring dynamic VM provisioning and optional S3-compatible remote state backups.
 
-## 🚀 Services Deployed
+## 🚀 Optional Services
 * **Home Assistant OS (HAOS)**
 * **AdGuard Home**
 * **Portainer**
 
----
-
-## ⚙️ Feature Toggles
 You can control which VMs are active by modifying the following booleans in your `.env` file:
 - `TF_VAR_deploy_haos="true"`
 - `TF_VAR_deploy_adguard="true"`
