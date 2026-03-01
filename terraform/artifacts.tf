@@ -17,5 +17,11 @@ resource "local_file" "ha_config_yaml" {
 
 resource "local_file" "nix_vars" {
   filename = "${path.module}/../nixos/generated-vars.nix"
-  content  = "# Generated Nix Vars..."
+  content  = <<EOT
+{
+  sshKeys = ${jsonencode(var.ssh_public_key)};
+  timeZone = "${var.timezone}";
+  githubRepo = "${var.github_repo}";
+}
+EOT
 }

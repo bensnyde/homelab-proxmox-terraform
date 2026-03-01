@@ -91,8 +91,8 @@ variable "github_repo" {
 }
 
 variable "ssh_public_key" {
-  description = "The public SSH key injected into the VMs for access"
-  type        = string
+  description = "The public SSH key(s) injected into the VMs for access"
+  type        = list(string) # Changed from string to list(string)
 }
 
 variable "provisioner_private_key" {
