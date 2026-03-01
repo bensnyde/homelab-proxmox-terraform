@@ -1,4 +1,4 @@
-# Proxmox Homelab: Declarative Infrastructure as Code
+# Proxmox Homelab
 
 A fully automated Proxmox homelab featuring dynamic VM provisioning and optional S3-compatible remote state backups.
 
