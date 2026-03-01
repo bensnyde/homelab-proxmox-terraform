@@ -8,37 +8,56 @@ export SOPS_SSH_KEY_PATHS=$(TF_VAR_sops_ssh_key_path)
 
 # --- Backend Detection Logic ---
 ifneq ($(TF_VAR_r2_account_id),)
-    # Scenario 1: Cloudflare R2
-    BACKEND_TYPE = "Cloudflare R2 (S3-Compatible)"
-    BACKEND_FLAGS = -backend-config="bucket=$(TF_VAR_r2_bucket)" \
-                    -backend-config="endpoint=https://$(TF_VAR_r2_account_id).r2.cloudflarestorage.com" \
-                    -backend-config="region=auto" \
-                    -backend-config="skip_credentials_validation=true" \
-                    -backend-config="skip_metadata_api_check=true" \
-                    -backend-config="skip_region_validation=true" \
-                    -backend-config="force_path_style=true"
+	BACKEND_TYPE = Cloudflare R2 S3-Compatible
+	BACKEND_FLAGS = -backend-config="bucket=$(TF_VAR_r2_bucket)" \
+					-backend-config="endpoint=https://$(TF_VAR_r2_account_id).r2.cloudflarestorage.com" \
+					-backend-config="region=auto" \
+					-backend-config="skip_credentials_validation=true" \
+					-backend-config="skip_metadata_api_check=true" \
+					-backend-config="skip_region_validation=true" \
+					-backend-config="force_path_style=true"
 else ifneq ($(TF_VAR_s3_bucket),)
-    # Scenario 2: Amazon S3
-    BACKEND_TYPE = "Amazon S3"
-    BACKEND_FLAGS = -backend-config="bucket=$(TF_VAR_s3_bucket)" \
-                    -backend-config="region=$(TF_VAR_s3_region)"
+	BACKEND_TYPE = Amazon S3
+	BACKEND_FLAGS = -backend-config="bucket=$(TF_VAR_s3_bucket)" \
+					-backend-config="region=$(TF_VAR_s3_region)"
 else
-    # Scenario 3: Local fallback
-    BACKEND_TYPE = "Local (terraform.tfstate)"
-    BACKEND_FLAGS = -backend-config="path=terraform.tfstate"
+	BACKEND_TYPE = Local terraform.tfstate
+	BACKEND_FLAGS = -backend-config="path=terraform.tfstate"
 endif
 
 .PHONY: help bootstrap status refresh plan apply clean encrypt decrypt
 
 help:
-	@echo "Detected Backend: $(BACKEND_TYPE)"
-	@echo "Usage:"
-	@echo "  make bootstrap  - Update versions and init OpenTofu with $(BACKEND_TYPE)"
-	@echo "  make status     - Refresh and list managed resources"
-	@echo "  make apply      - Deploy infrastructure to Proxmox"
+	@echo '============================================================'
+	@echo 'PROXMOX HOMELAB AUTOMATION'
+	@echo 'Detected Backend: $(BACKEND_TYPE)'
+	@echo '============================================================'
+	@echo 'Usage:'
+	@echo '  make bootstrap  - 1. Fetches latest HAOS/NixOS image URLs'
+	@echo '                    2. Initializes OpenTofu with $(BACKEND_TYPE)'
+	@echo '                    3. Generates Nix/Sops/HA config artifacts'
+	@echo ''
+	@echo '  make status     - Reconciles state with Proxmox and lists all'
+	@echo '                    active managed resources (VMs and Files)'
+	@echo ''
+	@echo '  make refresh    - Updates your local/remote state file to match'
+	@echo '                    the current real-world status of Proxmox'
+	@echo ''
+	@echo '  make plan       - Calculates changes and shows the deployment'
+	@echo '                    preview without making any modifications'
+	@echo ''
+	@echo '  make apply      - Builds the NixOS ISO and deploys all enabled'
+	@echo '                    VMs (HAOS, AdGuard, Portainer) to Proxmox'
+	@echo ''
+	@echo '  make encrypt    - Encrypts secrets.yaml using your SSH key'
+	@echo '  make decrypt    - Decrypts secrets.yaml for plaintext editing'
+	@echo ''
+	@echo '  make clean      - Deletes all local build artifacts, generated'
+	@echo '                    configs, and temporary Terraform files'
+	@echo '============================================================'
 
 bootstrap:
-	@echo "Initializing Backend: $(BACKEND_TYPE)"
+	@echo 'Initializing Backend: $(BACKEND_TYPE)'
 	chmod +x update_env_latest_image_urls.sh
 	./update_env_latest_image_urls.sh
 	mkdir -p vms/haos vms/adguard vms/portainer
@@ -53,7 +72,7 @@ refresh:
 	source .env && tofu refresh
 
 status: refresh
-	@echo "Backend: $(BACKEND_TYPE)"
+	@echo 'Backend: $(BACKEND_TYPE)'
 	source .env && tofu state list
 
 plan:
