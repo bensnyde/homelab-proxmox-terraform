@@ -4,5 +4,4 @@ result/
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
-
-# NOTE: flake.nix, generated-vars.nix and secrets.yaml MUST be committed to Git.
+*.decrypted.yaml
