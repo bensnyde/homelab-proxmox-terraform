@@ -15,6 +15,13 @@ resource "local_file" "ha_config_yaml" {
   content  = "# Generated HAOS Config..."
 }
 
+resource "null_resource" "nixos_bootstrap" {
+  # ...
+  provisioner "local-exec" {
+    command = "nixos-anywhere --extra-files ${var.extra_files_dir} --flake ${var.github_repo}#${var.hostname} root@${var.ip_address}"
+  }
+}
+
 resource "local_file" "nix_vars" {
   filename = "${path.module}/../nixos/generated-vars.nix"
   content  = <<EOT

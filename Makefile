@@ -79,7 +79,21 @@ plan:
 	source .env && tofu -chdir=terraform plan
 
 apply:
-	source .env && tofu -chdir=terraform apply -auto-approve
+	@# 1. Create a temporary folder for the extra files
+	mkdir -p ./tmp/etc/ssh
+	
+	@# 2. Copy your private key into the temporary folder
+	@# Using the variable from your .env
+	cp $(TF_VAR_provisioner_private_key) ./tmp/etc/ssh/ssh_host_ed25519_key
+	chmod 600 ./tmp/etc/ssh/ssh_host_ed25519_key
+	
+	@# 3. Run OpenTofu with the extra-files flag passed to nixos-anywhere
+	@# This assumes your OpenTofu code triggers nixos-anywhere
+	source .env && tofu -chdir=terraform apply -auto-approve \
+		-var='extra_files_dir=../tmp'
+	
+	@# 4. Cleanup
+	rm -rf ./tmp
 
 encrypt:
 	sops --encrypt --in-place secrets.yaml
