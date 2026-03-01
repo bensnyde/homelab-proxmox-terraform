@@ -96,10 +96,10 @@ apply:
 	rm -rf ./tmp
 
 encrypt:
-	sops --encrypt --in-place secrets.yaml
+	sops --encrypt --in-place terraform/secrets.yaml
 
 decrypt:
-	sops --decrypt --in-place secrets.yaml
+	sops --decrypt --in-place terraform/secrets.yaml
 
 clean:
 	rm -rf result/ .terraform/ terraform.tfstate* flake.nix .sops.yaml generated-vars.nix vms/haos/configuration.yaml
