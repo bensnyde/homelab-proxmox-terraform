@@ -20,7 +20,7 @@
     {
       "source": "${localEnv:TF_VAR_sops_ssh_key_path}",
       "target": "${localEnv:TF_VAR_sops_ssh_key_path}",
-      "type": "bind",
+      "type": "bind"
     }
   ],
 
