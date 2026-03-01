@@ -20,10 +20,26 @@ in {
   services.adguardhome = {
     enable = true;
     openFirewall = true;
-    settings.users = [{
-      name = "admin";
-      password = config.sops.secrets.adguard_hash.path;
-    }];
+    
+    settings = {
+      # --- Filtering & Protection Settings ---
+      protection_enabled = true;   # Enables overall protection
+      filtering_enabled = true;    # Enables DNS request filtering based on your rule lists
+      safebrowsing_enabled = true; # Blocks known malicious domains
+      
+      # (Optional) Enforce Safe Search on search engines like Google and DuckDuckGo
+      safe_search = {
+        enabled = false;
+      };
+      
+      # (Optional) Parental control filtering
+      parental_enabled = false;
+
+      users = [{
+        name = "admin";
+        password = config.sops.secrets.adguard_hash.path;
+      }];
+    };
   };
 
   system.autoUpgrade = {

@@ -12,10 +12,6 @@
     }
   },
 
-  "runArgs": [
-    "--env-file", ".env"
-  ],
-
   "mounts": [
     {
       "source": "${localEnv:TF_VAR_sops_ssh_key_path}",
@@ -32,7 +28,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "opentofu.opentofu",        // OpenTofu Support
+        "opentofu.opentofu",
         "jnoortheen.nix-ide",      // Nix Support
         "mkhl.direnv",             // Auto-load .env
         "signageos.signageos-vscode-sops", // SOPS Editor Support
