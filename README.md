@@ -1,6 +1,6 @@
 # Proxmox Homelab: Declarative Infrastructure as Code
 
-A fully automated Proxmox homelab featuring dynamic VM provisioning and optional S3-compatible remote state backups via Cloudflare R2.
+A fully automated Proxmox homelab featuring dynamic VM provisioning and optional S3-compatible remote state backups.
 
 ## 🚀 Services Deployed
 * **Home Assistant OS (HAOS)**
@@ -16,6 +16,17 @@ You can control which VMs are active by modifying the following booleans in your
 - `TF_VAR_deploy_portainer="true"`
 
 Setting a value to `"false"` will cause OpenTofu to securely skip its creation or gracefully destroy the VM if it already exists in Proxmox.
+
+---
+
+## 🔱 Customizing NixOS Configurations (Bring Your Own Repo)
+The NixOS VMs deployed by this project pull their final configurations directly from GitHub. You are strongly encouraged to fork this repository and point the deployment to your own code.
+
+In your `.env` file, update the repository variable:
+```bash
+export TF_VAR_github_repo="github:YourUsername/homelab-proxmox-terraform"
+```
+By defining your own repository, you gain full control over the NixOS configurations. This allows you to safely test out new services using feature branching and deploy updates through standard code merging workflows, entirely independent of the upstream template.
 
 ---
 
@@ -40,27 +51,24 @@ If R2 credentials are not detected in `.env` during `make bootstrap`, OpenTofu w
 
 ---
 
-## 🛠️ Prerequisites
-* **OpenTofu** and **Nix** installed locally.
-* **SOPS** installed locally (`sudo dnf install sops age` for Fedora).
+## 🚀 Quick Start (Dev Container)
+This project is optimized for **VS Code Dev Containers**.
+1. Ensure `TF_VAR_sops_ssh_key_path` in your `.env` points to your private SSH key.
+2. Open in VS Code -> **"Reopen in Container"**.
+3. The container automatically mounts your SSH key for SOPS decryption.
+
+---
+
+## 🛠️ Manual Prerequisites
+* **OpenTofu**, **Nix**, and **SOPS** installed locally.
 * A populated `.env` file containing your Proxmox credentials and SSH keys.
 
 ---
 
 ## 🔒 Secret Management
-Secrets are locked via `age` encryption. The `.sops.yaml` rules are dynamically generated based on the SSH public key provided in your `.env`.
-
-To encrypt your plaintext `secrets.yaml` for the first time:
-```bash
-make encrypt
-```
-
-To safely edit existing secrets:
-```bash
-make decrypt
-# Edit the file in your text editor
-make encrypt
-```
+Secrets are tied to your SSH Host Key.
+* **Encrypt:** `make encrypt`
+* **Decrypt:** `make decrypt`
 
 ---
 
@@ -84,3 +92,9 @@ Builds the custom NixOS ISO, provisions the hardware on Proxmox, and bootstraps 
 make plan
 make apply
 ```
+
+---
+
+## 🛠️ Maintenance
+- **Reconcile State:** If you make manual changes in Proxmox, run `make refresh` to sync your state file.
+- **Secrets:** Use `make decrypt` to edit `secrets.yaml` and `make encrypt` before committing.

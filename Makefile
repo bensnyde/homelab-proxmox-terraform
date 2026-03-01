@@ -1,10 +1,14 @@
 # Proxmox Homelab Automation
 # Requires: OpenTofu, Nix, SOPS, and a populated .env file
 
-.PHONY: help bootstrap status plan apply clean encrypt decrypt
-
 # Default shell for Makefile commands
 SHELL := /bin/bash
+
+# Ensure SOPS knows to use the SSH key defined in your .env
+# We clear the AGE variable to force SSH usage.
+export SOPS_AGE_KEY_FILE=
+export SOPS_IMPORT_PGP=false
+export SOPS_SSH_KEY_PATHS=$(TF_VAR_sops_ssh_key_path)
 
 # Define the R2 config string only if the variable is present
 ifneq ($(TF_VAR_r2_account_id),)
@@ -20,20 +24,21 @@ else
     BACKEND_TYPE = "Local (terraform.tfstate)"
 endif
 
-# Ensure SOPS knows to use the SSH key defined in your .env
-export SOPS_SSH_KEY_PATHS=$(TF_VAR_sops_ssh_key_path)
+.PHONY: help bootstrap status refresh plan apply clean encrypt decrypt
 
 help:
 	@echo "Usage:"
 	@echo "  make bootstrap  - Update OS versions, create dirs, and init OpenTofu"
 	@echo "  make status     - Verify state backend connection and list resources"
+	@echo "  make refresh    - Update local state to match the real-world Proxmox status"
 	@echo "  make plan       - Show the OpenTofu deployment plan"
 	@echo "  make apply      - Build ISO and deploy all VMs to Proxmox"
-	@echo "  make encrypt    - Encrypt secrets.yaml using generated .sops.yaml"
+	@echo "  make encrypt    - Encrypt secrets.yaml using SSH key"
 	@echo "  make decrypt    - Decrypt secrets.yaml for editing"
 
 # Step 1: Prepare the environment from top to bottom
 bootstrap:
+	@echo "Using SOPS Key: $(TF_VAR_sops_ssh_key_path)"
 	@echo "Fetching latest HAOS and NixOS versions..."
 	chmod +x update_env_latest_image_urls.sh
 	./update_env_latest_image_urls.sh
@@ -46,8 +51,13 @@ bootstrap:
 		-target=local_file.ha_config_yaml \
 		-auto-approve
 
+# Update local state to match the real-world Proxmox status
+refresh:
+	@echo "Refreshing state from Proxmox..."
+	source .env && tofu refresh
+
 # Verify connection and list managed resources
-status:
+status: refresh
 	@echo "Checking State Backend: $(BACKEND_TYPE)"
 	source .env && tofu state list
 
