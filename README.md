@@ -1,41 +1,86 @@
-# Proxmox Terraform Infrastructure
+# Proxmox Homelab: Declarative Infrastructure as Code
 
-This Terraform configuration automates the deployment of virtual machines on a Proxmox Virtual Environment (VE). It utilizes the `telmate/proxmox` provider to manage virtual machines (VMs).
+A fully automated Proxmox homelab featuring dynamic VM provisioning and optional S3-compatible remote state backups via Cloudflare R2.
 
+## 🚀 Services Deployed
+* **Home Assistant OS (HAOS)**
+* **AdGuard Home**
+* **Portainer**
 
-## Usage
+---
 
-1.  **Clone the repository.**
-2.  **Create a `terraform.tfvars` file:**
-    * Set the values for the variables, including your Proxmox API credentials, SSH public key, username and password.
+## ⚙️ Feature Toggles
+You can control which VMs are active by modifying the following booleans in your `.env` file:
+- `TF_VAR_deploy_haos="true"`
+- `TF_VAR_deploy_adguard="true"`
+- `TF_VAR_deploy_portainer="true"`
 
-    ```terraform
-    pm_api_url          = "https://your_proxmox_ip:8006/api2/json"
-    pm_api_token_id     = "your_api_token_id"
-    pm_api_token_secret = "your_api_token_secret"
-    ssh_public_key      = "your_ssh_public_key"
-    username            = "your_username"
-    password            = "your_password"
-    searchdomain        = "your.domain.com"
-    ```
+Setting a value to `"false"` will cause OpenTofu to securely skip its creation or gracefully destroy the VM if it already exists in Proxmox.
 
-3.  **Initialize Terraform:**
+---
 
-    ```bash
-    terraform init
-    ```
+## 💾 Optional Cloud Backup (Cloudflare R2)
+This project uses the **S3-compatible backend** to support remote state backups via Cloudflare R2. 
 
-4.  **Plan the deployment:**
+To activate:
+1. Create an R2 bucket in Cloudflare.
+2. Generate an R2 API Token (Edit permissions).
+3. Fill out the R2 section of your `.env`.
 
-    ```bash
-    terraform plan
-    ```
+If R2 credentials are not detected in `.env` during `make bootstrap`, OpenTofu will default to a local `terraform.tfstate`.
 
-5.  **Apply the configuration:**
+---
 
-    ```bash
-    terraform apply
-    ```
+## 📁 Project Architecture
+* `main.tf`: The core orchestration logic. Generates temporary configuration files based on your `.env`.
+* `Makefile`: Wraps complex setup and deployment commands into simple `make` targets.
+* `vms/`: Directory containing app-specific configurations (HAOS YAML and NixOS modules).
+* `.env`: *(Git-ignored)* The single source of truth for all VM IDs, network IPs, identities, and SSH keys.
+* `secrets.yaml`: Encrypted SOPS file containing hashed passwords.
 
-6.  **Access the VM:**
-    * Once the VM is deployed, you can access it using SSH with the provided public key.
+---
+
+## 🛠️ Prerequisites
+* **OpenTofu** and **Nix** installed locally.
+* **SOPS** installed locally (`sudo dnf install sops age` for Fedora).
+* A populated `.env` file containing your Proxmox credentials and SSH keys.
+
+---
+
+## 🔒 Secret Management
+Secrets are locked via `age` encryption. The `.sops.yaml` rules are dynamically generated based on the SSH public key provided in your `.env`.
+
+To encrypt your plaintext `secrets.yaml` for the first time:
+```bash
+make encrypt
+```
+
+To safely edit existing secrets:
+```bash
+make decrypt
+# Edit the file in your text editor
+make encrypt
+```
+
+---
+
+## 🏗️ Deployment Workflow
+
+### 1. Bootstrap the Environment
+Fetches the latest OS images, creates necessary folders, initializes the backend, and generates config artifacts.
+```bash
+make bootstrap
+```
+
+### 2. Verify Connection
+Check if your state file is accessible (especially if using R2).
+```bash
+make status
+```
+
+### 3. Review & Deploy
+Builds the custom NixOS ISO, provisions the hardware on Proxmox, and bootstraps the operating systems via SSH.
+```bash
+make plan
+make apply
+```
