@@ -30,15 +30,12 @@ By defining your own repository, you gain full control over the NixOS configurat
 
 ---
 
-## 💾 Optional Cloud Backup (Cloudflare R2)
-This project uses the **S3-compatible backend** to support remote state backups via Cloudflare R2. 
+## 💾 Remote State Backups
+This project supports multiple backends for your `tfstate` file. The `Makefile` automatically configures the backend based on your `.env` variables:
 
-To activate:
-1. Create an R2 bucket in Cloudflare.
-2. Generate an R2 API Token (Edit permissions).
-3. Fill out the R2 section of your `.env`.
-
-If R2 credentials are not detected in `.env` during `make bootstrap`, OpenTofu will default to a local `terraform.tfstate`.
+1. **Cloudflare R2:** Activated if `TF_VAR_r2_account_id` is set. Provides free egress and S3 compatibility.
+2. **Amazon S3:** Activated if `TF_VAR_s3_bucket` is set (and R2 is not).
+3. **Local:** Default behavior if no cloud variables are detected.
 
 ---
 
