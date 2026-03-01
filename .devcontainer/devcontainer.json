@@ -1,30 +1,52 @@
 {
-  "name": "Homelab IaC",
-  "build": { "dockerfile": "Dockerfile" },
+  "name": "Proxmox Homelab IaC",
   
-  // 1. Load all TF_VARs from your .env into the container shell
-  "runArgs": ["--env-file", ".env"],
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
+
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {},
+    "ghcr.io/devcontainers/features/terraform:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true
+    }
+  },
+
+  "runArgs": [
+    "--env-file", ".env"
+  ],
 
   "mounts": [
-    // 2. Map the host's SSH key to the container's internal path.
-    // We use ${localEnv} to pull the path directly from your Fedora environment.
-    "source=${localEnv:TF_VAR_sops_ssh_key_path},target=${localEnv:TF_VAR_sops_ssh_key_path},type=bind,readonly"
+    {
+      "source": "${localEnv:TF_VAR_sops_ssh_key_path}",
+      "target": "${localEnv:TF_VAR_sops_ssh_key_path}",
+      "type": "bind",
+    }
   ],
 
   "containerEnv": {
-    // 3. Tell SOPS to use the SSH key for decryption
-    "SOPS_IMPORT_PGP": "false",
-    "SOPS_AGE_KEY_FILE": "" // Disable Age if you are strictly using SSH keys
+    "SOPS_SSH_KEY_PATHS": "${localEnv:TF_VAR_sops_ssh_key_path}",
+    "SOPS_IMPORT_PGP": "false"
   },
 
   "customizations": {
     "vscode": {
       "extensions": [
-        "opentofu.opentofu",
-        "jnoortheen.nix-ide",
-        "signageos.signageos-vscode-sops"
-      ]
+        "opentofu.opentofu",        // OpenTofu Support
+        "jnoortheen.nix-ide",      // Nix Support
+        "mkhl.direnv",             // Auto-load .env
+        "signageos.signageos-vscode-sops", // SOPS Editor Support
+        "ms-azuretools.vscode-docker"      // Docker Management
+      ],
+      "settings": {
+        "nix.enableLanguageServer": true,
+        "nix.serverPath": "nil",
+        "opentofu.lint.enable": true
+      }
     }
   },
+
+  "postCreateCommand": "sudo chmod 600 ${containerEnv:SOPS_SSH_KEY_PATHS} && nix-channel --update",
+
   "remoteUser": "vscode"
 }
